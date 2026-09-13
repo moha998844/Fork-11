@@ -61,11 +61,20 @@ jobs:
 
       - name: Build AnyKernel3
         run: |
+         # 1. Export absolute paths and LLVM toolchain variables
+          export PATH="\(GITHUB_WORKSPACE/\){{ env.CLANG_DIR }}/bin:$PATH"
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export CC=clang
+          export LD=ld.lld
+          export AR=llvm-ar
+          export NM=llvm-nm
+          export OBJCOPY=llvm-objcopy
+          export OBJDUMP=llvm-objdump
+          export STRIP=llvm-strip
+          export LLVM=1
+          export LLVM_IAS=1
           cd "$GITHUB_WORKSPACE/AnyKernel3"
-          
-          # Fix the relative path inside build.sh to point to the correct folder level
-          sed -i 's|\.\./\.\./clang-r547379|\.\./clang-r547379|g' build.sh
-          
           # Ensure absolute paths are exported for the compiler and kernel root
           export PATH="\(GITHUB_WORKSPACE/\){{ env.CLANG_DIR }}/bin:$PATH"
           export KROOT="$GITHUB_WORKSPACE"
