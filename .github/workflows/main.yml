@@ -15,12 +15,15 @@ jobs:
       CLANG_DIR: "clang-r547379"
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Kernel Repository
         uses: actions/checkout@v4
         with:
           ref: lord-nethunter-dev
           fetch-depth: 1
-          submodules: recursive
+
+      - name: Clone AnyKernel3
+        run: |
+          git clone --depth=1 -b lord-ak-old https://github.com/moha998844/AnyKernel3.git "$GITHUB_WORKSPACE/AnyKernel3"
 
       - name: Install Dependencies
         run: |
@@ -31,15 +34,15 @@ jobs:
         id: cache-clang
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/${{ env.CLANG_DIR }}
-          key: ${{ runner.os }}-clang-${{ env.CLANG_URL }}
+          path: \({{ github.workspace }}/\){{ env.CLANG_DIR }}
+          key: \({{ runner.os }}-clang-\){{ env.CLANG_URL }}
 
       - name: Download and Extract Clang
         if: steps.cache-clang.outputs.cache-hit != 'true'
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/$CLANG_DIR"
+          mkdir -p "\(GITHUB_WORKSPACE/\)CLANG_DIR"
           wget -qO clang.tar.gz "$CLANG_URL"
-          tar -xzf clang.tar.gz -C "$GITHUB_WORKSPACE/$CLANG_DIR"
+          tar -xzf clang.tar.gz -C "\(GITHUB_WORKSPACE/\)CLANG_DIR"
           rm clang.tar.gz
 
       - name: Determine Release Tag
@@ -49,18 +52,18 @@ jobs:
           GIT_TAG=$(git describe --tags --exact-match 2>/dev/null || true)
 
           if [ -n "$GIT_TAG" ]; then
-            echo "RELEASE_TAG=$GIT_TAG" >> $GITHUB_ENV
+            echo "RELEASE_TAG=\(GIT_TAG" >>\)GITHUB_ENV
             echo "IS_PRERELEASE=false" >> $GITHUB_ENV
           else
             SHORT_HASH=$(git rev-parse --short=7 HEAD)
-            echo "RELEASE_TAG=$SHORT_HASH" >> $GITHUB_ENV
+            echo "RELEASE_TAG=\(SHORT_HASH" >>\)GITHUB_ENV
             echo "IS_PRERELEASE=true" >> $GITHUB_ENV
           fi
 
       - name: Build AnyKernel3
         run: |
           # Add Clang to PATH
-          export PATH="$GITHUB_WORKSPACE/$CLANG_DIR/bin:$PATH"
+          export PATH="\(GITHUB_WORKSPACE/\)CLANG_DIR/bin:$PATH"
 
           cd "$GITHUB_WORKSPACE/AnyKernel3"
 
