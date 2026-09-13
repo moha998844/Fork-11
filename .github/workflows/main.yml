@@ -61,7 +61,10 @@ jobs:
 
       - name: Build AnyKernel3
         run: |
+         # Export absolute path to Clang so ld.lld is globally accessible by build.sh
+          export PATH="\(GITHUB_WORKSPACE/\){{ env.CLANG_DIR }}/bin:$PATH"
           cd "$GITHUB_WORKSPACE/AnyKernel3"
+          
           export ZIPPREFIX="${{ env.RELEASE_TAG }}"
           export BUILD="1"
           export ANYKERNEL="1"
