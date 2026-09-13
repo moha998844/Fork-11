@@ -18,7 +18,7 @@ jobs:
       - name: Checkout Kernel Repository
         uses: actions/checkout@v4
         with:
-          ref: lord-nethunter-dev
+          ref: lineage-23.2
           fetch-depth: 1
 
       - name: Clone AnyKernel3
