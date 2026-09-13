@@ -28,7 +28,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bc bison flex libncurses5-dev libssl-dev python3 python3-pip zip device-tree-compiler
+          sudo apt-get install -y lld llvm build-essential bc bison flex libncurses5-dev libssl-dev python3 python3-pip zip device-tree-compiler
 
       - name: Cache Clang Toolchain
         id: cache-clang
@@ -44,7 +44,17 @@ jobs:
           wget -qO clang.tar.gz "$CLANG_URL"
           tar -xzf clang.tar.gz -C "\(GITHUB_WORKSPACE/\)CLANG_DIR"
           rm clang.tar.gz
-
+      - name: Set Clang Path
+        run: |
+          echo "\(GITHUB_WORKSPACE/clang-r547379/bin" >>\)GITHUB_PATH
+      
+      - name: Check Toolchain
+        run: |
+            ld.lld --version
+             clang --version
+      
+      
+      
       - name: Determine Release Tag
         id: tag
         run: |
@@ -61,22 +71,10 @@ jobs:
 
       - name: Build AnyKernel3
         run: |
-         # 1. Export absolute paths and LLVM toolchain variables
-          export PATH="\(GITHUB_WORKSPACE/\){{ env.CLANG_DIR }}/bin:$PATH"
-          export ARCH=arm64
-          export SUBARCH=arm64
-          export CC=clang
-          export LD=ld.lld
-          export AR=llvm-ar
-          export NM=llvm-nm
-          export OBJCOPY=llvm-objcopy
-          export OBJDUMP=llvm-objdump
-          export STRIP=llvm-strip
-          export LLVM=1
-          export LLVM_IAS=1
+    
           cd "$GITHUB_WORKSPACE/AnyKernel3"
-          # Ensure absolute paths are exported for the compiler and kernel root
-          export PATH="\(GITHUB_WORKSPACE/\){{ env.CLANG_DIR }}/bin:$PATH"
+         
+         
           export KROOT="$GITHUB_WORKSPACE"
           
           export ZIPPREFIX="${{ env.RELEASE_TAG }}"
