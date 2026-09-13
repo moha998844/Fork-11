@@ -61,9 +61,14 @@ jobs:
 
       - name: Build AnyKernel3
         run: |
-         # Export absolute path to Clang so ld.lld is globally accessible by build.sh
-          export PATH="\(GITHUB_WORKSPACE/\){{ env.CLANG_DIR }}/bin:$PATH"
           cd "$GITHUB_WORKSPACE/AnyKernel3"
+          
+          # Fix the relative path inside build.sh to point to the correct folder level
+          sed -i 's|\.\./\.\./clang-r547379|\.\./clang-r547379|g' build.sh
+          
+          # Ensure absolute paths are exported for the compiler and kernel root
+          export PATH="\(GITHUB_WORKSPACE/\){{ env.CLANG_DIR }}/bin:$PATH"
+          export KROOT="$GITHUB_WORKSPACE"
           
           export ZIPPREFIX="${{ env.RELEASE_TAG }}"
           export BUILD="1"
