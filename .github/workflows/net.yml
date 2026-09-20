@@ -1,17 +1,16 @@
-name: Fix tag change
+name: Check Runner Specs
 
-on:
-  workflow_dispatch:
+on: [workflow_dispatch]
 
-permissions:
-  contents: write
 jobs:
-  build:
+  print-specs:
     runs-on: ubuntu-latest
-  steps:
-  - name : install neo fetch
-   run  : | 
-         sudo apt-get update 
-         
+    steps:
+      - name: CPU Information
+        run: lscpu
 
- 
+      - name: Memory (RAM) Information
+        run: free -h
+
+      - name: Disk Space Information
+        run: df -h
