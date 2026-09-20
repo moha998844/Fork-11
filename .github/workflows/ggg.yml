@@ -1,0 +1,30 @@
+name: Build with Cleanup
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Free Up Disk Space
+        run: |
+          echo "=== Free Space Before Cleanup ==="
+          df -h
+          
+          echo "Removing large pre-installed tools..."
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf $AGENT_TOOLSDIRECTORY
+          
+          echo "=== Free Space After Cleanup ==="
+          df -h
+
+      - name: Run Your Build Commands
+        run: |
+          # Add your compilation or build steps here
+          echo "Building project..."
