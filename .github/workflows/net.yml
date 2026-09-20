@@ -1,8 +1,17 @@
-  Neofetch
+name: Fix tag change
 
-  -name : install neo fetch
-    run : 
-      sudo apt update 
-      sudo apt insatll neofetch
-      neofetch
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+  steps:
+  - name : install neo fetch
+   run  : | 
+         sudo apt-get update 
+         
+
  
