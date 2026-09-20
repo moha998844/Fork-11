@@ -1,0 +1,8 @@
+  Neofetch
+
+  -name : install neo fetch
+    run : 
+      sudo apt update 
+      sudo apt insatll neofetch
+      neofetch
+ 
