@@ -1,4 +1,4 @@
-name: ksu 
+name: Build Kernel with KSU-Next and SUSFS
 
 on:
   workflow_dispatch:
@@ -30,25 +30,25 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE"
 
-          # KernelSU-Next, legacy branch (non-GKI / pre-5.10 kernels)
+          # KernelSU-Next, legacy branch
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
 
-          # SUSFS patches, non-GKI kernel-5.4 branch
+          # SUSFS patches, kernel-5.4 branch
           git clone --depth=1 --branch kernel-5.4 https://gitlab.com/simonpunk/susfs4ksu.git susfs4ksu
 
+          # Copie sécurisée des correctifs en fonction de l'arborescence officielle de susfs4ksu
           cp susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch KernelSU-Next/
           cp susfs4ksu/kernel_patches/50_add_susfs_in_kernel-5.4.patch .
-          cp susfs4ksu/kernel_patches/fs/* fs/
-          cp susfs4ksu/kernel_patches/include/linux/* include/linux/
+          cp -r susfs4ksu/kernel_patches/fs/* fs/
+          cp -r susfs4ksu/kernel_patches/include/linux/* include/linux/
 
+          # Application des patchs dans les bons répertoires
           cd KernelSU-Next
           patch -p1 < 10_enable_susfs_for_ksu.patch
           cd ..
           patch -p1 < 50_add_susfs_in_kernel-5.4.patch
 
-          # Disable kprobe hooks - non-GKI SUSFS uses manual hooks instead
-          find KernelSU-Next -type f -exec sed -i 's/#ifdef CONFIG_KPROBES/#if defined(CONFIG_KPROBES) \&\& 0/' {} +
-
+          # Nettoyage
           rm -rf susfs4ksu 10_enable_susfs_for_ksu.patch 50_add_susfs_in_kernel-5.4.patch 2>/dev/null || true
 
       - name: Install Dependencies
@@ -60,20 +60,20 @@ jobs:
         id: cache-clang
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/${{ env.CLANG_DIR }}
-          key: ${{ runner.os }}-clang-${{ env.CLANG_URL }}
+          path: \({{ github.workspace }}/\){{ env.CLANG_DIR }}
+          key: \({{ runner.os }}-clang-\){{ env.CLANG_URL }}
 
       - name: Download and Extract Clang
         if: steps.cache-clang.outputs.cache-hit != 'true'
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/$CLANG_DIR"
+          mkdir -p "\(GITHUB_WORKSPACE/\)CLANG_DIR"
           wget -qO clang.tar.gz "$CLANG_URL"
-          tar -xzf clang.tar.gz -C "$GITHUB_WORKSPACE/$CLANG_DIR"
+          tar -xzf clang.tar.gz -C "\(GITHUB_WORKSPACE/\)CLANG_DIR"
           rm clang.tar.gz
 
       - name: Set Clang Path
         run: |
-          echo "$GITHUB_WORKSPACE/clang-r547379/bin" >> $GITHUB_PATH
+          echo "\(GITHUB_WORKSPACE/clang-r547379/bin" >>\)GITHUB_PATH
 
       - name: Check Toolchain
         run: |
@@ -86,11 +86,11 @@ jobs:
           GIT_TAG=$(git describe --tags --exact-match 2>/dev/null || true)
 
           if [ -n "$GIT_TAG" ]; then
-            echo "RELEASE_TAG=$GIT_TAG" >> $GITHUB_ENV
+            echo "RELEASE_TAG=\(GIT_TAG" >>\)GITHUB_ENV
             echo "IS_PRERELEASE=false" >> $GITHUB_ENV
           else
             SHORT_HASH=$(git rev-parse --short=7 HEAD)
-            echo "RELEASE_TAG=$SHORT_HASH" >> $GITHUB_ENV
+            echo "RELEASE_TAG=\(SHORT_HASH" >>\)GITHUB_ENV
             echo "IS_PRERELEASE=true" >> $GITHUB_ENV
           fi
 
@@ -111,7 +111,7 @@ jobs:
           tag_name: ${{ env.RELEASE_TAG }}
           name: Release ${{ env.RELEASE_TAG }}
           body: |
-            Automated AnyKernel3 build for Xiaomi 11T Pro (vili).
+            Automated AnyKernel3 build for Xiaomi 11T Pro (vili) with KernelSU-Next & SUSFS.
             Commit: ${{ github.sha }}
           draft: false
           prerelease: ${{ env.IS_PRERELEASE }}
