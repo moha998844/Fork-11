@@ -392,7 +392,7 @@ struct cgroup {
 	int nr_descendants;
 	int nr_dying_descendants;
 	int max_descendants;
-
+    int id;
 	/*
 	 * Each non-empty css_set associated with this cgroup contributes
 	 * one to nr_populated_csets.  The counter is zero iff this cgroup
